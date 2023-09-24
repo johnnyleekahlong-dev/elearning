@@ -2,10 +2,15 @@
 
 import React, { FC, useState } from "react";
 import Heading from "./utils/Heading";
+import Header from "./components/Header";
+import Hero from "./components/Hero";
 
 interface Props {}
 
-export default function page() {
+const Page: FC<Props> = () => {
+  const [open, setOpen] = useState<boolean>(false);
+  const [activeItem, setActiveItem] = useState<number>(0);
+
   return (
     <div>
       <Heading
@@ -13,6 +18,10 @@ export default function page() {
         description="Elearning is a platform for students to learn"
         keywords="Programming, MERN, Redux, Machine Learning"
       />
+      <Header open={open} setOpen={setOpen} activeItem={activeItem} />
+      <Hero />
     </div>
   );
-}
+};
+
+export default Page;
