@@ -3,7 +3,7 @@
 import React, { FC, useState } from "react";
 import Heading from "./utils/Heading";
 import Header from "./components/Header";
-import Hero from "./components/Hero";
+import Hero from "./components/route/Hero";
 
 interface Props {}
 
