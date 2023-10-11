@@ -13,7 +13,10 @@ import { useSelector } from "react-redux";
 import Image from "next/image";
 import avatar from "../../public/assets/avatar.png";
 import { useSession } from "next-auth/react";
-import { useSocialAuthMutation } from "@/redux/features/auth/authApi";
+import {
+  useLogOutQuery,
+  useSocialAuthMutation,
+} from "@/redux/features/auth/authApi";
 import { toast } from "react-hot-toast";
 
 type Props = {
@@ -31,6 +34,10 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
   const { user } = useSelector((state: any) => state.auth);
 
   const { data } = useSession();
+  const [logout, setLogout] = useState(false);
+  const {} = useLogOutQuery(undefined, {
+    skip: !logout ? true : false,
+  });
 
   const [socialAuth, { isSuccess, error }] = useSocialAuthMutation();
   if (typeof window !== "undefined") {
@@ -62,10 +69,16 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
       }
     }
 
-    if (isSuccess) {
-      toast.success("Login successful");
+    if (data === null) {
+      if (isSuccess) {
+        toast.success("Login successfully");
+      }
     }
-  });
+
+    if (data === null) {
+      setLogout(true);
+    }
+  }, [setLogout, data, isSuccess, user, socialAuth]);
 
   return (
     <div className="w-full relative">
@@ -102,9 +115,14 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
               {user ? (
                 <Link href={"/profile"}>
                   <Image
-                    src={user.avatar ? user.avatar : avatar}
+                    src={user.avatar ? user.avatar.url : avatar}
+                    height={30}
+                    width={30}
                     alt="avatar"
                     className="w-[30px] h-[30px] rounded-full"
+                    style={{
+                      border: activeItem === 5 ? "2px solid #37a39a" : "none  ",
+                    }}
                   />
                 </Link>
               ) : (

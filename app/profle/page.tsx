@@ -4,19 +4,22 @@ import React, { useState } from "react";
 import Protected from "../hooks/useProtected";
 import Heading from "../utils/Heading";
 import Header from "../components/Header";
+import Profile from "../components/profile/Profile";
+import { useSelector } from "react-redux";
 
 type Props = {};
 
 const Page = (props: Props) => {
   const [open, setOpen] = useState<boolean>(false);
-  const [activeItem, setActiveItem] = useState<number>(0);
+  const [activeItem, setActiveItem] = useState<number>(5);
   const [route, setRoute] = useState<string>("Login");
+  const { user } = useSelector((state: any) => state.auth);
 
   return (
     <div>
       <Protected>
         <Heading
-          title="ELearning"
+          title={`${user.name} Profile`}
           description="Elearning is a platform for students to learn"
           keywords="Programming, MERN, Redux, Machine Learning"
         />
@@ -27,6 +30,7 @@ const Page = (props: Props) => {
           setRoute={setRoute}
           route={route}
         />
+        <Profile user={user} />
       </Protected>
     </div>
   );
