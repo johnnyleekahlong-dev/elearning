@@ -5,8 +5,12 @@ import Image from "next/image";
 import avatarIcon from "../../../public/assets/avatar.png";
 import { AiOutlineCamera } from "react-icons/ai";
 import { styles } from "../../../app/style/style";
-import { useUpdateAvatarMutation } from "@/redux/features/user/userApi";
+import {
+  useUpdateAvatarMutation,
+  useEditProfileMutation,
+} from "@/redux/features/user/userApi";
 import { useLoadUserQuery } from "@/redux/features/api/apiSlice";
+import { toast } from "react-hot-toast";
 
 type Props = {
   avatar: string | null;
@@ -17,6 +21,8 @@ const ProfileInfo: React.FC<Props> = ({ avatar, user }) => {
   const [name, setName] = useState<string>(user && user.name);
 
   const [updateAvatar, { isSuccess, error }] = useUpdateAvatarMutation();
+  const [editProfile, { isSuccess: success, error: updateError }] =
+    useEditProfileMutation();
   const [loadUser, setLoadUser] = useState(false);
   const {} = useLoadUserQuery(undefined, { skip: loadUser ? false : true });
 
@@ -33,17 +39,28 @@ const ProfileInfo: React.FC<Props> = ({ avatar, user }) => {
     fileReader.readAsDataURL(e.target.files[0]);
   };
 
-  const handleSubmit = () => {};
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (name !== "") {
+      await editProfile({
+        name,
+      });
+    }
+  };
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess || success) {
       setLoadUser(true);
     }
 
-    if (error) {
+    if (error || updateError) {
       console.log(error);
     }
-  }, [isSuccess, setLoadUser, error]);
+
+    if (success) {
+      toast.success("Profile updated successfully");
+    }
+  }, [isSuccess, setLoadUser, error, success, updateError]);
 
   return (
     <>
