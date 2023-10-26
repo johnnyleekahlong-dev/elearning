@@ -1,14 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CourseOptions from "./CourseOptions";
 import CourseInformation from "./CourseInformation";
 import CourseData from "./CourseData";
 import CourseContent from "./CourseContent";
+import CoursePreview from "./CoursePreview";
+import { useCreateCourseMutation } from "@/redux/features/course/courseApi";
+import { toast } from "react-hot-toast";
+import { redirect } from "next/navigation";
 
 type Props = {};
 
 const CreateCourse = (props: Props) => {
+  const [createCourse, { isLoading, isSuccess, error }] =
+    useCreateCourseMutation();
   const [active, setActive] = useState(0);
   const [courseInfo, setCourseInfo] = useState({
     name: "",
@@ -40,7 +46,71 @@ const CreateCourse = (props: Props) => {
 
   const [courseData, setCourseData] = useState({});
 
-  const handleSubmit = () => {};
+  const handleSubmit = () => {
+    // put all the collected data and make it into an oject to save into the database
+    const formattedBenefits = benifits.map((benefit) => ({
+      title: benefit.title,
+    }));
+
+    const formattedPrerequisites = prerequisites.map((prerequisite) => ({
+      title: prerequisite.title,
+    }));
+
+    const formattedCourseContentData = courseContentData.map(
+      (courseContent) => ({
+        videoUrl: courseContent.videoUrl,
+        title: courseContent.title,
+        description: courseContent.description,
+        videoSection: courseContent.videoSection,
+        links: courseContent.links.map((link) => ({
+          title: link.title,
+          url: link.url,
+        })),
+        suggestion: courseContent.suggestion,
+      })
+    );
+
+    // prepare the data object
+    const data = {
+      name: courseInfo.name,
+      description: courseInfo.description,
+      price: courseInfo.price,
+      estimatedPrice: courseInfo.estimatedPrice,
+      tags: courseInfo.tags,
+      thumbnail: courseInfo.thumbnail,
+      level: courseInfo.level,
+      demoUrl: courseInfo.demoUrl,
+      totalVideos: courseContentData.length,
+      benefits: formattedBenefits,
+      prerequisites: formattedPrerequisites,
+      courseContent: formattedCourseContentData,
+    };
+
+    setCourseData(data);
+  };
+
+  const handleCourseCreate = async () => {
+    const data = courseData;
+
+    if (!isLoading) {
+      await createCourse(data);
+    }
+  };
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success("Course created successfully");
+      redirect("/admin/all-courses");
+    }
+
+    if (error) {
+      if ("data" in error) {
+        const errorMessage = error as any;
+        toast.error(errorMessage.data.message);
+      }
+    }
+  }, [error, isSuccess]);
+
   return (
     <div className="w-full flex min-h-screen">
       <div className="w-[80%]">
@@ -71,6 +141,15 @@ const CreateCourse = (props: Props) => {
             courseContentData={courseContentData}
             setCourseContentData={setCourseContentData}
             handleSubmit={handleSubmit}
+          />
+        )}
+
+        {active === 3 && (
+          <CoursePreview
+            active={active}
+            setActive={setActive}
+            courseData={courseData}
+            handleCourseCreate={handleCourseCreate}
           />
         )}
       </div>
